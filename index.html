@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автоматическая проверка домашних заданий</title>
+    <style>
+        :root {
+            --primary: #FF7300;
+            --primary-hover: #E66A00;
+            --text-dark: #1A202C;
+            --text-main: #2D3748;
+            --text-muted: #718096;
+            --bg-white: #FFFFFF;
+            --bg-gray: #F7FAFC;
+            --border: #E2E8F0;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+            background-color: var(--bg-white);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        section {
+            padding: 96px 0;
+        }
+
+        h1, h2 {
+            color: var(--text-dark);
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--primary);
+            color: white;
+            padding: 18px 36px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Block 1: Hero */
+        .hero {
+            background-color: var(--bg-gray);
+            text-align: center;
+            padding: 120px 0;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero video {
+            max-width: 100%;
+            height: auto;
+            margin-top: 48px;
+            border-radius: var(--radius);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+        }
+
+        /* Block 2: Interactive Calculator */
+        .calc-wrapper {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            overflow: hidden;
+        }
+
+        .calc-controls {
+            padding: 40px;
+            background: var(--bg-gray);
+            border-right: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .calc-visuals {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .vertical-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 60px;
+            height: 250px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .bar-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            width: 100px;
+        }
+
+        .bar-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .bar-value.ai-text {
+            color: var(--primary);
+        }
+
+        .bar {
+            width: 100%;
+            background-color: var(--text-muted);
+            border-radius: 8px 8px 0 0;
+            transition: height 0.5s ease-in-out;
+        }
+
+        .bar.ai-bar {
+            background-color: var(--primary);
+        }
+
+        .bar-label {
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .calc-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-box {
+            background: var(--bg-gray);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-box span {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-box strong {
+            font-size: 1.5rem;
+            color: var(--text-dark);
+        }
+
+        .calc-conclusion {
+            margin-top: 24px;
+            background-color: var(--text-dark);
+            color: white;
+            padding: 24px;
+            border-radius: 8px;
+            font-size: 1.125rem;
+            text-align: center;
+        }
+
+        .calc-conclusion strong {
+            color: var(--primary);
+        }
+
+        /* Block 3: Workflow */
+        .workflow {
+            background-color: var(--bg-gray);
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .step {
+            background: var(--bg-white);
+            padding: 24px 32px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-num {
+            background-color: var(--primary);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            width: 100%;
+        }
+
+        .step-content h3 {
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .step-content img {
+            width: 100%;
+            height: auto;
+            margin-top: 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        /* Block 4: Limitations */
+        .limits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .limit-card {
+            padding: 32px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-gray);
+        }
+
+        .limit-card h3 {
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            font-size: 1.125rem;
+        }
+
+        .limit-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Block 5: Pricing */
+        .pricing {
+            background-color: var(--bg-white);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            background: var(--bg-gray);
+            padding: 48px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price-card.featured {
+            border: 2px solid var(--primary);
+            transform: scale(1.02);
+            background: var(--bg-white);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .price-title {
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .price-val {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+        .price-period {
+            color: var(--text-muted);
+            margin-bottom: 32px;
+            display: block;
+        }
+
+        .price-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 40px;
+            flex-grow: 1;
+        }
+
+        .price-features li {
+            position: relative;
+            padding-left: 32px;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .price-features li::before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .price-card .btn {
+            width: 100%;
+        }
+
+        /* Block 6: Footer */
+        footer {
+            background-color: var(--text-dark);
+            color: var(--text-muted);
+            padding: 64px 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        @media (max-width: 850px) {
+            .hero h1 { font-size: 2.25rem; }
+            h2 { font-size: 1.75rem; }
+            .calc-wrapper { grid-template-columns: 1fr; }
+            .calc-controls { border-right: none; border-bottom: 1px solid var(--border); }
+            .price-card.featured { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Автоматическая проверка рукописных домашних заданий</h1>
+            <p>Инструмент для учителей, высвобождающий 140 часов в год.</p>
+            <a href="#pricing" class="btn">Начать проверку (7 дней бесплатно)</a>
+            <video autoplay loop muted playsinline>
+                <source src="Frizzle Grader Short - 6_26 take 2.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+    <section id="calculator">
+        <div class="container">
+            <h2>Экономика вашего времени</h2>
+            
+            <div class="calc-wrapper">
+                <div class="calc-controls">
+                    <div class="form-group">
+                        <label for="inp-classes">Количество классов</label>
+                        <input type="number" id="inp-classes" value="5" min="1" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="inp-students">Учеников в классе</label>
+                        <input type="number" id="inp-students" value="23" min="1" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="inp-freq">Проверок в месяц (на 1 класс)</label>
+                        <input type="number" id="inp-freq" value="2.5" min="0.5" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="inp-time">Часов на ручную проверку 1 класса</label>
+                        <input type="number" id="inp-time" value="1" min="0.1" step="0.1">
+                    </div>
+                </div>
+
+                <div class="calc-visuals">
+                    <div class="vertical-chart">
+                        <div class="bar-col">
+                            <div class="bar-value" id="val-manual">12.5 ч</div>
+                            <div class="bar" id="bar-manual" style="height: 100%;"></div>
+                            <div class="bar-label">Вручную<br>(в месяц)</div>
+                        </div>
+                        <div class="bar-col">
+                            <div class="bar-value ai-text" id="val-ai">30 мин</div>
+                            <div class="bar ai-bar" id="bar-ai" style="height: 4%;"></div>
+                            <div class="bar-label">С нейросетью<br>(в месяц)</div>
+                        </div>
+                    </div>
+
+                    <div class="calc-stats">
+                        <div class="stat-box">
+                            <span>Затраты в год (вручную)</span>
+                            <strong id="stat-manual-year">150 ч</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>Затраты в год (нейросеть)</span>
+                            <strong style="color: var(--primary);" id="stat-ai-year">6 ч</strong>
+                        </div>
+                    </div>
+
+                    <div class="calc-conclusion">
+                        Результат: <strong id="val-saved">12 свободных часов ежемесячно</strong>.<br> 
+                        Если вы используете это время для частных уроков, подписка окупается мгновенно.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="workflow">
+        <div class="container">
+            <h2>Как работает алгоритм</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h3>Загрузка данных</h3>
+                        <p>Ученики самостоятельно загружают фотографии своих работ на сайт.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h3>Извлечение ответа</h3>
+                        <p>Алгоритм распознает рукописный текст, математические формулы и структуру ответа со страниц.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h3>Логический анализ</h3>
+                        <p>Нейросеть сверяет извлеченные данные с эталонным ответом и выявляет вычислительные и логические ошибки.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h3>Оценка и аналитика</h3>
+                        <p>Система выставляет оценки ученикам и создает краткий отчет для учителя о том, в каких местах у класса есть проблемы.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h3>Сводная доска успеваемости</h3>
+                        <p>Все проверенные работы, выставленные баллы и статистика класса автоматически собираются в единую ведомость в личном кабинете. Учитель видит общую картину по всем ученикам в одном окне.</p>
+                        <img src="dashboard.png" alt="Дашборд успеваемости">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="limitations">
+        <div class="container">
+            <h2>Факты о точности и ограничениях</h2>
+            <div class="limits-grid">
+                <div class="limit-card">
+                    <h3>ИИ не заменяет учителя</h3>
+                    <p>Нейросеть берет на себя всю рутину – монотонную проверку. Вы освобождаете время на человеческую работу – объяснение материала, педагогическую работу с детьми.</p>
+                </div>
+                <div class="limit-card">
+                    <h3>Экспертность алгоритма</h3>
+                    <p>Наш ИИ обучен на лучших мировых и Российских методических материалах. Он набрал 35/42 баллов на международной математической олимпиаде в 2025 (уровень золотой медали).</p>
+                </div>
+                <div class="limit-card">
+                    <h3>Точность распознавания</h3>
+                    <p>Современные алгоритмы распознают даже самый корявый почерк лучше людей.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2>Тарифные планы</h2>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <div class="price-title">Ежемесячный</div>
+                    <div class="price-val">690 ₽</div>
+                    <span class="price-period">в месяц</span>
+                    <ul class="price-features">
+                        <li><strong>Лимиты:</strong> До 300 проверок (фотографий) в месяц. Этого объема достаточно для нагрузки учителя до 1.8 ставки.</li>
+                        <li>Логический анализ ответов</li>
+                        <li>Формирование отчетов</li>
+                        <li>Единая доска с оценками учеников</li>
+                    </ul>
+                    <a href="#" class="btn" style="background-color: var(--text-dark);">Оформить на месяц</a>
+                </div>
+
+                <div class="price-card featured">
+                    <div class="badge">Скидка 10%</div>
+                    <div class="price-title">Годовой</div>
+                    <div class="price-val">7 452 ₽</div>
+                    <span class="price-period">в год (выгода 828 ₽)</span>
+                    <ul class="price-features">
+                        <li><strong>Лимиты:</strong> До 300 проверок (фотографий) ежемесячно.</li>
+                        <li>Логический анализ ответов</li>
+                        <li>Формирование отчетов</li>
+                        <li>Единая доска с оценками учеников</li>
+                        <li><strong>Фиксация цены на год</strong></li>
+                    </ul>
+                    <a href="#" class="btn">Оформить подписку за 7452 руб.</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="#">Политика конфиденциальности</a>
+                <a href="#">Пользовательское соглашение</a>
+                <a href="#">Контакты службы поддержки (Telegram/Email)</a>
+                <a href="#">Инструкция по правильному фотографированию тетрадей (для учеников)</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputs = ['inp-classes', 'inp-students', 'inp-freq', 'inp-time'];
+            
+            const formatTime = (hours) => {
+                if (hours < 1) return Math.round(hours * 60) + ' мин';
+                return Number.isInteger(hours) ? hours + ' ч' : hours.toFixed(1) + ' ч';
+            };
+
+            const calculate = () => {
+                const classes = parseFloat(document.getElementById('inp-classes').value) || 0;
+                // students переменная исключена из множителей, так как время задается на 1 класс целиком
+                const freq = parseFloat(document.getElementById('inp-freq').value) || 0;
+                const timePerClass = parseFloat(document.getElementById('inp-time').value) || 0;
+
+                // Ручное время
+                const manualMonthly = classes * freq * timePerClass;
+                const manualYearly = manualMonthly * 12;
+
+                // Время ИИ (зафиксировано как 4% от ручного времени согласно базовым 30 мин / 12.5 ч)
+                const aiMonthly = manualMonthly * 0.04;
+                const aiYearly = aiMonthly * 12;
+
+                const savedMonthly = manualMonthly - aiMonthly;
+
+                // Обновление текста
+                document.getElementById('val-manual').innerText = formatTime(manualMonthly);
+                document.getElementById('val-ai').innerText = formatTime(aiMonthly);
+                document.getElementById('stat-manual-year').innerText = formatTime(manualYearly);
+                document.getElementById('stat-ai-year').innerText = formatTime(aiYearly);
+                document.getElementById('val-saved').innerText = `${formatTime(savedMonthly)} свободного времени ежемесячно`;
+
+                // Обновление гистограммы (визуализация пропорций)
+                // За базовую 100% высоту берется ручное время. 
+                // Минимальная высота бара ИИ - 4%, чтобы он не исчезал визуально.
+                const aiRatio = manualMonthly > 0 ? Math.max((aiMonthly / manualMonthly) * 100, 4) : 0;
+                
+                document.getElementById('bar-manual').style.height = manualMonthly > 0 ? '100%' : '0%';
+                document.getElementById('bar-ai').style.height = `${aiRatio}%`;
+            };
+
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculate);
+            });
+
+            // Первичный расчет
+            calculate();
+        });
+    </script>
+</body>
+</html>
